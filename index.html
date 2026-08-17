@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171914" />
+    <meta
+      name="description"
+      content="Интерактивна подготовка за изпит по безопасно боравене с огнестрелно оръжие."
+    />
+    <title>Право в целта — подготовка за изпит</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#home" data-route="home" aria-label="Към началото">
+        <span class="brand-mark" aria-hidden="true"><i></i></span>
+        <span><strong>ПРАВО В ЦЕЛТА</strong><small>ИЗПИТНА ПОДГОТОВКА</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Основна навигация">
+        <button class="nav-button active" data-route="home">Начало</button>
+        <button class="nav-button" data-route="cards">Карти</button>
+        <button class="nav-button" data-route="quiz">Тест</button>
+        <button class="nav-button" data-route="notes">Конспект</button>
+      </nav>
+      <button class="progress-pill" data-route="home" aria-label="Виж напредъка">
+        <span id="header-progress">0%</span>
+        <i><b id="header-progress-bar"></b></i>
+      </button>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <footer class="site-footer">
+      <span>Материалът е преработен от 34-те снимки в тази папка.</span>
+      <span>За изпита, не за спешни или правни решения.</span>
+      <button id="reset-progress" class="text-button">Изчисти напредъка</button>
+    </footer>
+
+    <dialog id="source-dialog" class="source-dialog">
+      <div class="dialog-head">
+        <div><span class="eyebrow">ОРИГИНАЛЕН ИЗТОЧНИК</span><h2 id="source-title">Страница</h2></div>
+        <button class="icon-button" data-close-dialog aria-label="Затвори">×</button>
+      </div>
+      <img id="source-image" alt="Снимка на оригиналната страница" />
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
