@@ -397,6 +397,10 @@ h3 { font-size: 23px; line-height: 1.15; }
 .result-panel p { color: rgba(243,239,227,.65); }
 .result-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 26px; }
 .result-panel .secondary-button { color: var(--paper); border-color: rgba(255,255,255,.35); }
+.result-panel.failed .result-ring { background: conic-gradient(var(--red) var(--score), rgba(255,255,255,.12) 0); }
+.result-panel.failed .result-ring strong { color: var(--red); }
+.result-panel.passed .result-ring { background: conic-gradient(#73a586 var(--score), rgba(255,255,255,.12) 0); }
+.result-panel.passed .result-ring strong { color: #73a586; }
 
 .notes-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
 .notes-index { position: sticky; top: 105px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; }

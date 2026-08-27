@@ -5,6 +5,8 @@
   const app = document.querySelector("#app");
   const storageKey = "pravo-v-celta-progress-v1";
   const letters = ["A", "Б", "В", "Г"];
+  const EXAM_LENGTH = 40;
+  const EXAM_MAX_MISTAKES = 8;
 
   const ui = {
     route: "home",
@@ -304,7 +306,7 @@
             <span class="mode-number">10</span><h3>Бърза тренировка</h3><p>10 смесени въпроса с незабавна обратна връзка и източник.</p>
           </button>
           <button class="mode-card accent" data-start-quiz="exam">
-            <span class="mode-number">20</span><h3>Пробен изпит</h3><p>20 въпроса без подсказване. Резултатът и грешките се показват накрая.</p>
+            <span class="mode-number">${EXAM_LENGTH}</span><h3>Пробен изпит</h3><p>${EXAM_LENGTH} разбъркани въпроса без подсказване, като на реалния изпит. Издържаш при до ${EXAM_MAX_MISTAKES} грешки. Резултатът и грешките се показват накрая.</p>
           </button>
           <button class="mode-card" data-start-quiz="mistakes" ${mistakes ? "" : "disabled"}>
             <span class="mode-number">${mistakes}</span><h3>Моите грешки</h3><p>${mistakes ? "Повтори въпросите, на които си грешил повече пъти." : "Тук ще се появят въпросите, които объркаш."}</p>
@@ -316,7 +318,7 @@
   function startQuiz(mode) {
     let pool = data.questions;
     let count = 10;
-    if (mode === "exam") count = 20;
+    if (mode === "exam") count = EXAM_LENGTH;
     if (mode === "mistakes") {
       pool = data.questions.filter((question) => {
         const item = progress.questions[question.id];
@@ -422,15 +424,22 @@
   function renderQuizResult() {
     const quiz = ui.quiz;
     const percent = Math.round((quiz.score / quiz.list.length) * 100);
-    const title = percent >= 85 ? "Готов си за финален кръг" : percent >= 65 ? "Добра основа" : "Още един рунд";
     const mistakes = quiz.list.filter((question, index) => quiz.answers[index] !== question.answer);
+    const isExam = quiz.mode === "exam";
+    const passed = isExam ? mistakes.length <= EXAM_MAX_MISTAKES : null;
+    const title = isExam
+      ? (passed ? "Издържан изпит" : "Не издържан изпит")
+      : percent >= 85 ? "Готов си за финален кръг" : percent >= 65 ? "Добра основа" : "Още един рунд";
+    const summary = isExam
+      ? `${mistakes.length} грешки от ${quiz.list.length} въпроса — позволени са до ${EXAM_MAX_MISTAKES}.`
+      : `${quiz.score} верни от ${quiz.list.length}. ${mistakes.length ? `Имаш ${mistakes.length} въпроса за повторение.` : "Нито една грешка — отлично."}`;
     app.innerHTML = `
       <section class="page">
         <div class="quiz-shell">
-          <div class="result-panel">
+          <div class="result-panel ${isExam ? (passed ? "passed" : "failed") : ""}">
             <div class="result-ring" style="--score:${percent}%"><strong>${percent}%</strong></div>
             <h2>${title}</h2>
-            <p>${quiz.score} верни от ${quiz.list.length}. ${mistakes.length ? `Имаш ${mistakes.length} въпроса за повторение.` : "Нито една грешка — отлично."}</p>
+            <p>${summary}</p>
             <div class="result-actions">
               <button class="primary-button" data-restart-quiz>Нов тест</button>
               ${mistakes.length ? '<button class="secondary-button" data-review-session-mistakes>Повтори грешките</button>' : ""}
