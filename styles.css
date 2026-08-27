@@ -359,6 +359,9 @@ h3 { font-size: 23px; line-height: 1.15; }
 .grade-button.hard:hover { background: var(--accent-soft); }
 .grade-button.good:hover { background: #cee0d5; }
 
+.flashcard.part-card { min-height: 0; height: auto; }
+.flashcard.part-card .flashcard-inner { position: relative; inset: auto; height: auto; min-height: 480px; }
+.flashcard.part-card .flash-front { position: relative; inset: auto; }
 .part-face { justify-content: flex-start; }
 .part-face .flash-kicker { margin-bottom: 14px; }
 .part-image-wrap {
