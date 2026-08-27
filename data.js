@@ -632,5 +632,91 @@
     image: pageImages[page],
   }));
 
-  window.STUDY_DATA = { sections, lessons, cards, questions, pageImages };
+  const weaponTypes = {
+    pistol: { label: "Пистолет" },
+    revolver: { label: "Револвер" },
+    shotgun: { label: "Пушка помпа" },
+  };
+
+  const GLOCK_CREDIT = "Снимка: Steve Dock / UK MOD · Open Government Licence v1.0 (Wikimedia Commons)";
+  const REVOLVER_CREDIT = "Снимка: US Army Ordnance Dept. · обществено достояние (Wikimedia Commons)";
+  const SHOTGUN_CREDIT = "Снимка: Vcardozobr, „Shotgun CBC Pump“ · CC BY-SA 4.0 (Wikimedia Commons)";
+
+  const parts = [
+    {
+      id: "part-01",
+      name: "Цев",
+      weapons: ["pistol", "shotgun"],
+      page: 27,
+      image: "parts/shotgun.jpg",
+      boxes: [{ x: 60, y: 12, w: 38, h: 42 }],
+      note: "Цевта е тръбата, по която куршумът/снарядът се придвижва при изстрел и получава първоначалната си насочваща скорост.",
+      credit: SHOTGUN_CREDIT,
+    },
+    {
+      id: "part-02",
+      name: "Затворен блок",
+      weapons: ["pistol"],
+      page: 27,
+      image: "parts/pistol.jpg",
+      boxes: [{ x: 10, y: 12, w: 78, h: 20 }],
+      note: "При изстрел затворният блок отскача назад, изхвърля гилзата и зарежда следващия патрон.",
+      credit: GLOCK_CREDIT,
+    },
+    {
+      id: "part-03",
+      name: "Рама",
+      weapons: ["pistol"],
+      page: 27,
+      image: "parts/pistol.jpg",
+      boxes: [{ x: 13, y: 30, w: 77, h: 60 }],
+      note: "Рамата носи спусъковия механизъм и ръкохватката; върху нея се движи затворният блок.",
+      credit: GLOCK_CREDIT,
+    },
+    {
+      id: "part-04",
+      name: "Рамка с неподвижна цев и ръкохватка",
+      weapons: ["revolver"],
+      page: 27,
+      image: "parts/revolver.jpg",
+      boxes: [
+        { x: 0, y: 3, w: 42, h: 22 },
+        { x: 68, y: 2, w: 30, h: 96 },
+      ],
+      note: "При револвера цевта е неподвижно свързана с рамката — за разлика от пистолета, тук няма отделен движещ се затворен блок.",
+      credit: REVOLVER_CREDIT,
+    },
+    {
+      id: "part-05",
+      name: "Барабан",
+      weapons: ["revolver"],
+      page: 27,
+      image: "parts/revolver.jpg",
+      boxes: [{ x: 43, y: 5, w: 26, h: 47 }],
+      note: "Барабанът съдържа патронниците и се завърта при всеки изстрел.",
+      credit: REVOLVER_CREDIT,
+    },
+    {
+      id: "part-06",
+      name: "Затворна кутия",
+      weapons: ["shotgun"],
+      page: 27,
+      image: "parts/shotgun.jpg",
+      boxes: [{ x: 36, y: 5, w: 23, h: 50 }],
+      note: "Затворната кутия е корпусът, който подрежда и насочва патроните към патронника.",
+      credit: SHOTGUN_CREDIT,
+    },
+    {
+      id: "part-07",
+      name: "Затвор",
+      weapons: ["shotgun"],
+      page: 27,
+      image: "parts/shotgun.jpg",
+      boxes: [{ x: 40, y: 5, w: 12, h: 18 }],
+      note: "Затворът е скрит вътре в затворната кутия — видим е само когато пушката е отворена/презаредена.",
+      credit: SHOTGUN_CREDIT,
+    },
+  ];
+
+  window.STUDY_DATA = { sections, lessons, cards, questions, pageImages, parts, weaponTypes };
 })();

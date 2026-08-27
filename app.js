@@ -15,6 +15,9 @@
     cardsDueOnly: false,
     cardIndex: 0,
     cardFlipped: false,
+    partsWeapon: "all",
+    partsIndex: 0,
+    partsFlipped: false,
     quiz: null,
     lastQuiz: null,
     notesSection: "all",
@@ -28,9 +31,12 @@
   function loadProgress() {
     try {
       const stored = JSON.parse(localStorage.getItem(storageKey));
-      if (stored && stored.version === 1) return stored;
+      if (stored && stored.version === 1) {
+        if (!stored.parts) stored.parts = {};
+        return stored;
+      }
     } catch (_) {}
-    return { version: 1, cards: {}, questions: {}, studyDays: [] };
+    return { version: 1, cards: {}, questions: {}, parts: {}, studyDays: [] };
   }
 
   function saveProgress() {
@@ -131,6 +137,7 @@
             <p>34 снимки, превърнати в ясен конспект, ${data.cards.length} карти и ${data.questions.length} ABC въпроса. Подчертаното е с приоритет, а номерата на членове и алинеи не се зубрят.</p>
             <div class="hero-actions">
               <button class="primary-button" data-route="cards">Започни с картите</button>
+              <button class="secondary-button" data-route="parts">Части на оръжието</button>
               <button class="secondary-button" data-start-quiz="quick">Бърз тест · 10</button>
             </div>
           </div>
@@ -282,6 +289,99 @@
     ui.cardFlipped = false;
     ui.cardIndex = cards.length > 1 ? (ui.cardIndex + 1) % cards.length : 0;
     renderCards();
+  }
+
+  function weaponLabel(key) {
+    return data.weaponTypes[key]?.label || key;
+  }
+
+  function filteredParts() {
+    return data.parts.filter((part) => ui.partsWeapon === "all" || part.weapons.includes(ui.partsWeapon));
+  }
+
+  function renderParts() {
+    const parts = filteredParts();
+    if (ui.partsIndex >= parts.length) ui.partsIndex = 0;
+    const part = parts[ui.partsIndex];
+    const weaponKeys = Object.keys(data.weaponTypes);
+
+    app.innerHTML = `
+      <section class="page">
+        <div class="page-head">
+          <div><span class="eyebrow">ОРЪЖЕЙНА КУЛТУРА</span><h1>Части на оръжието</h1></div>
+          <p>Погледни отбелязаната част на снимката и се опитай да познаеш как се казва и за кое оръжие се отнася, преди да обърнеш картата.</p>
+        </div>
+        <div class="toolbar">
+          <div class="filter-group">
+            <button class="filter-chip ${ui.partsWeapon === "all" ? "active" : ""}" data-parts-weapon="all">Всички</button>
+            ${weaponKeys.map((key) => `<button class="filter-chip ${ui.partsWeapon === key ? "active" : ""}" data-parts-weapon="${key}">${weaponLabel(key)}</button>`).join("")}
+          </div>
+        </div>
+        ${part ? renderPartCard(part, parts.length) : '<div class="empty-state"><h2>Няма части в този филтър</h2><p>Избери друго оръжие.</p></div>'}
+      </section>`;
+  }
+
+  function renderPartCard(part, count) {
+    const currentState = progress.parts[part.id] || {};
+    const status = currentState.seen ? `ниво ${currentState.level || 0}` : "нова част";
+    return `
+      <div class="card-stage">
+        <div class="card-meta">
+          <span>${ui.partsIndex + 1} / ${count} · ${part.weapons.map(weaponLabel).join(" / ")}</span>
+          <span>${status}</span>
+        </div>
+        <div class="flashcard part-card ${ui.partsFlipped ? "flipped" : ""}" data-flip-part role="button" tabindex="0" aria-label="Обърни картата">
+          <div class="flashcard-inner">
+            <article class="flash-face flash-front part-face">
+              <span class="flash-kicker">КОЯ ЧАСТ Е ОТБЕЛЯЗАНА?</span>
+              <div class="part-image-wrap">
+                <img src="${part.image}" alt="Част от оръжие" loading="lazy">
+                ${part.boxes.map((box) => `<span class="part-highlight" style="left:${box.x}%;top:${box.y}%;width:${box.w}%;height:${box.h}%"></span>`).join("")}
+              </div>
+              <span class="flip-hint">Натисни картата или Space, за да видиш отговора</span>
+            </article>
+            <article class="flash-face flash-back part-face">
+              <span class="flash-kicker">ОТГОВОР</span>
+              <h2>${part.name}</h2>
+              <div class="part-weapon-badges">${part.weapons.map((key) => `<span class="weapon-badge">${weaponLabel(key)}</span>`).join("")}</div>
+              <p class="part-note">${part.note}</p>
+              <span class="part-credit">${part.credit}</span>
+              <span class="flip-hint">Оцени отговора си отдолу</span>
+            </article>
+          </div>
+        </div>
+        <div class="grade-row ${ui.partsFlipped ? "visible" : ""}">
+          <button class="grade-button again" data-grade-part="again">Пак <span>1 · след 10 мин</span></button>
+          <button class="grade-button hard" data-grade-part="hard">Трудно <span>2 · утре</span></button>
+          <button class="grade-button good" data-grade-part="good">Знам го <span>3 · по-късно</span></button>
+        </div>
+      </div>`;
+  }
+
+  function gradePart(grade) {
+    const parts = filteredParts();
+    const part = parts[ui.partsIndex];
+    if (!part) return;
+    const current = progress.parts[part.id] || { level: 0 };
+    const intervals = [1, 2, 4, 7, 14, 30];
+    let level = current.level || 0;
+    let due;
+    if (grade === "again") {
+      level = 0;
+      due = Date.now() + 10 * 60 * 1000;
+    } else if (grade === "hard") {
+      level = Math.max(1, level);
+      due = Date.now() + 24 * 60 * 60 * 1000;
+    } else {
+      level = Math.min(5, level + 1);
+      due = Date.now() + intervals[level] * 24 * 60 * 60 * 1000;
+    }
+    progress.parts[part.id] = { seen: true, level, due, lastGrade: grade, updated: Date.now() };
+    markStudyDay();
+    saveProgress();
+    ui.partsFlipped = false;
+    ui.partsIndex = parts.length > 1 ? (ui.partsIndex + 1) % parts.length : 0;
+    renderParts();
   }
 
   function renderQuiz() {
@@ -522,10 +622,11 @@
   }
 
   function setRoute(route) {
-    ui.route = ["home", "cards", "quiz", "notes"].includes(route) ? route : "home";
+    ui.route = ["home", "cards", "parts", "quiz", "notes"].includes(route) ? route : "home";
     document.querySelectorAll(".nav-button").forEach((button) => button.classList.toggle("active", button.dataset.route === ui.route));
     if (ui.route === "home") renderHome();
     if (ui.route === "cards") renderCards();
+    if (ui.route === "parts") renderParts();
     if (ui.route === "quiz") renderQuiz();
     if (ui.route === "notes") renderNotes();
     app.focus({ preventScroll: true });
@@ -585,6 +686,27 @@
       ui.cardsPriorityOnly = false;
       ui.cardsDueOnly = false;
       renderCards();
+      return;
+    }
+
+    const partsWeapon = event.target.closest("[data-parts-weapon]");
+    if (partsWeapon) {
+      ui.partsWeapon = partsWeapon.dataset.partsWeapon;
+      ui.partsIndex = 0;
+      ui.partsFlipped = false;
+      renderParts();
+      return;
+    }
+
+    if (event.target.closest("[data-flip-part]")) {
+      ui.partsFlipped = !ui.partsFlipped;
+      renderParts();
+      return;
+    }
+
+    const gradePartButton = event.target.closest("[data-grade-part]");
+    if (gradePartButton) {
+      gradePart(gradePartButton.dataset.gradePart);
       return;
     }
 
@@ -680,20 +802,32 @@
   });
 
   document.addEventListener("keydown", (event) => {
-    if (ui.route !== "cards" || event.target.matches("input, textarea")) return;
-    if (event.code === "Space") {
-      event.preventDefault();
-      ui.cardFlipped = !ui.cardFlipped;
-      renderCards();
+    if (event.target.matches("input, textarea")) return;
+    if (ui.route === "cards") {
+      if (event.code === "Space") {
+        event.preventDefault();
+        ui.cardFlipped = !ui.cardFlipped;
+        renderCards();
+      }
+      if (ui.cardFlipped && ["1", "2", "3"].includes(event.key)) {
+        gradeCard({ 1: "again", 2: "hard", 3: "good" }[event.key]);
+      }
     }
-    if (ui.cardFlipped && ["1", "2", "3"].includes(event.key)) {
-      gradeCard({ 1: "again", 2: "hard", 3: "good" }[event.key]);
+    if (ui.route === "parts") {
+      if (event.code === "Space") {
+        event.preventDefault();
+        ui.partsFlipped = !ui.partsFlipped;
+        renderParts();
+      }
+      if (ui.partsFlipped && ["1", "2", "3"].includes(event.key)) {
+        gradePart({ 1: "again", 2: "hard", 3: "good" }[event.key]);
+      }
     }
   });
 
   document.querySelector("#reset-progress").addEventListener("click", () => {
     if (!confirm("Да изчистя ли всички карти, тестове и серията ти?")) return;
-    progress = { version: 1, cards: {}, questions: {}, studyDays: [] };
+    progress = { version: 1, cards: {}, questions: {}, parts: {}, studyDays: [] };
     saveProgress();
     setRoute(ui.route);
     showToast("Напредъкът е изчистен");
